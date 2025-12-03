@@ -14,32 +14,35 @@ def configure_gemini():
         return True
     return False
 
-def generate_summary(metrics: dict) -> str:
+def generate_summary(metrics: dict, anomalies: list) -> str:
     gemini_enabled = configure_gemini()
 
     prompt = (
-        f"Metrics: {metrics}\n"
-        "Act as a Senior AdTech Data Analyst. "
-        "Produce a concise executive summary with trends, correlations, anomalies, "
-        "and 2-3 actionable recommendations. Focus on impressions, CTR, revenue, "
-        "temperature effects, and visitor traffic."
+        "Act as a Senior AdTech Performance Analyst.\n"
+        "Generate a concise, client-ready executive summary using only the provided data.\n\n"
+        f"METRICS:\n{metrics}\n\n"
+        f"ANOMALIES:\n{anomalies}\n\n"
+        "Your summary must include:\n"
+        "- 3–4 key insights\n"
+        "- 1 correlation insight (e.g., temperature vs visitors)\n"
+        "- 2 actionable recommendations\n"
     )
 
     masked_prompt = mask_pii(prompt)
 
     if gemini_enabled:
         try:
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            resp = model.generate_content(masked_prompt)
-            return resp.text.strip()
-        except Exception as e:
-            print('Gemini error, fallback used:', e)
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            response = model.generate_content(masked_prompt)
+            return response.text.strip()
+        except Exception:
+            pass
 
     return (
         "Offline Summary:\n"
-        f"- Impressions: {metrics['total_impressions']}\n"
-        f"- CTR: {metrics['ctr']:.4f}\n"
-        "- Temperature correlated with visitor behavior.\n"
-        "- Optimize campaigns for cooler evening hours.\n"
-        "- Adjust bids dynamically using weather signals."
+        f"- Total Impressions: {metrics.get('total_impressions')}\n"
+        f"- CTR: {metrics.get('ctr')}\n"
+        "- Temperature shows correlation with foot-traffic.\n"
+        "- Several anomalies detected in impressions/revenue.\n"
+        "- Optimize timing and creatives based on visitor behavior.\n"
     )

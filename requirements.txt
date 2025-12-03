@@ -3,3 +3,5 @@ matplotlib
 python-pptx
 numpy
 google-generativeai
+scikit-learn
+streamlit

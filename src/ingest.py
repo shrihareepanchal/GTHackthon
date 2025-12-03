@@ -2,14 +2,26 @@ import pandas as pd
 import json
 
 def load_clickstream(path):
-    return pd.read_csv(path, parse_dates=["timestamp"])
+    df = pd.read_csv(path, low_memory=False)
+    if "timestamp" in df:
+        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+        df = df.dropna(subset=["timestamp"])
+    return df
 
 def load_foot_traffic(path):
-    return pd.read_csv(path, parse_dates=["timestamp"])
+    df = pd.read_csv(path, low_memory=False)
+    if "timestamp" in df:
+        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+        df = df.dropna(subset=["timestamp"])
+    return df
 
 def load_weather(path):
-    with open(path) as f:
+    with open(path, "r") as f:
         data = json.load(f)
+
     df = pd.DataFrame(data)
-    df["timestamp"] = pd.to_datetime(df["timestamp"])
+    if "timestamp" in df:
+        df["timestamp"] = pd.to_datetime(df["timestamp"], errors="coerce")
+        df = df.dropna(subset=["timestamp"])
+
     return df
